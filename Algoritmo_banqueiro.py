@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def RecursosTotais(qtd_tipos_recursos):
     recursos_totais = np.zeros((qtd_tipos_recursos), dtype='int64')
     for i in range(qtd_tipos_recursos):
