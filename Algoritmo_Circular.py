@@ -63,4 +63,5 @@ def main():
     turnAround = circular(processos, quantum, trocaContexto)
     tempoMedio(processos, turnAround)
 
+    
 main()
