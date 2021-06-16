@@ -10,28 +10,28 @@ def circular(processos, quantum, trocaContexto):
             for i in range(len(processos)):
                 if processos[i] <= 0:
 
-                    print(f"\nP{i} já Finalizado")
+                    print(f"\nP{i} foi finalizado")
 
                 elif processos[i] <= quantum:
                     tempo_atual += processos[i]
                     processos[i] -= processos[i]
 
-                    print(f"\nP{i} executa")
+                    print(f"\nP{i} executado")
                     print(f"Termino em T-{tempo_atual}")
 
                     if processos[i] == 0:
                         turn_around[i] = tempo_atual
                         print(f"Processo P{i} terminou em T-{tempo_atual}")
-                        print("TROCA DE CONTEXTO")
+                        print("TROCA DE CONTEXTO!!")
                         tempo_atual += trocaContexto
 
                 else:
                     tempo_atual += quantum
                     processos[i] -= quantum
 
-                    print(f"\nP{i} executa")
+                    print(f"\nP{i} executado")
                     print(f"Termino em T-{tempo_atual}")
-                    print("TROCA DE CONTEXTO")
+                    print("TROCA DE CONTEXTO!!")
                     tempo_atual += trocaContexto
                     turn_around[i] = tempo_atual
 
@@ -48,7 +48,7 @@ def tempoMedio(lista_de_processos, lista_de_tempos):
 
 def main():
     
-    qtdProcessos = int(input('Insira a quantidade de processos: '))
+    qtdProcessos = int(input('Digite a quantidade de processos: '))
 
     processos = list()
 
@@ -57,8 +57,8 @@ def main():
         processos.append(processo)
     
     print(f'Processos: {processos}')
-    quantum = int(input('\nInsira o tamanho do quantum: '))
-    trocaContexto = int(input('\nInsira o valor da troca de contexto: '))
+    quantum = int(input('\nDigite o tamanho do quantum: '))
+    trocaContexto = int(input('\nDigite o valor da troca de contexto: '))
 
     turnAround = circular(processos, quantum, trocaContexto)
     tempoMedio(processos, turnAround)
