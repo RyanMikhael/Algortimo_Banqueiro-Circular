@@ -1,129 +1,138 @@
 import numpy as np
 
-
-def RecursosTotais(qtd_tipos_recursos):
-    recursos_totais = np.zeros((qtd_tipos_recursos), dtype='int64')
-    for i in range(qtd_tipos_recursos):
-        recurso = int(input('Digite a quantidade do recurso %d:\n'
-                            '>>> ' % (i+1)))
-        recursos_totais[i] += recurso
-
-    print('\nVetor de recursos totais (E):', recursos_totais)
-    print()
-
-    return recursos_totais
+#Iniciando o programa
+Titulo = "Algoritmo do banqueiro"
+print(Titulo.center(140).upper()+ '\n')
+qtd = int(input('Insira a quantidade de recursos existentes do vetor: '))
+qtd_processos = int(input('Insira a quantidade de processos: '))
 
 
-def MatrizAlocados(qtd_processos, qtd_tipos_recursos):
-    matriz_alocados = np.zeros((qtd_processos, qtd_tipos_recursos), dtype='int64')
-    for i in range(len(matriz_alocados)):
-        for j in range(len(matriz_alocados[i])):
-            matriz_alocados[i, j] += int(input('Digite a quantidade do recurso %d alocada no processo %d:\n' \
-                                               '>>> ' % ((j + 1), (i + 1))))
-     
-    print('\nMatriz de recursos alocados a cada processo (C):\n', matriz_alocados)
-    print()
-
-    return matriz_alocados
-
-
-def RecursosAlocados(matriz_alocados):
-    recursos_alocados = np.zeros(len(matriz_alocados[0]), dtype='int64')
-    for i in range(len(matriz_alocados)):
-        for j in range(len(matriz_alocados[i])):
-            recursos_alocados[j] += matriz_alocados[i, j]
-
-    print('\nVetor de recursos alocados (P):\n', recursos_alocados)
-    print()
-
-    return recursos_alocados
-
-
-def RecursosDisponiveis(recursos_totais, recursos_alocados):
-    recursos_disponiveis = recursos_totais - recursos_alocados
-    print('\nVetor de recursos disponíveis (A):\n', recursos_disponiveis)
-    print()
+# Vetor de recursos existentes E
+def RecursosTotais(qtd):
+    E = list()
+    for i in range(qtd):
+        recurso = int(input(f'Insira a quantidade do recurso {i+1}: '))
+        E.append(recurso)
     
-    return recursos_disponiveis
+    return E
 
 
-def RecursosNecessarios(qtd_processos, qtd_tipos_recursos):
-    matriz_recursos_necessarios = np.zeros((qtd_processos, qtd_tipos_recursos), dtype='int64')
+# Vetor de recursos disponíveis A
+def RecursosDisponiveis(qtd):
+    A = list()
+    for i in range(qtd):
+        recurso = int(input(f'Insira a quantidade do recurso {i+1} disponível: '))
+        A.append(recurso)
+    
+    return A
+
+
+# Pede a inserção da matriz de alocação C
+def MatrizAlocaçao(qtd_processos, qtd):
+    matriz = list()
     for i in range(qtd_processos):
-        for j in range(qtd_tipos_recursos):
-            recurso_necessario = int(input('Digite a quantidade do recurso %d que é necessário ao processo %d:\n' \
-                                           '>>> ' % ((j + 1), (i + 1))))
-            matriz_recursos_necessarios[i, j] += recurso_necessario
+        processos = list()
+        for j in range(qtd):
+            recurso = int(input(f'Insira a quantidade do recurso {j+1} disponível para o processo {i+1}: '))
+            processos.append(recurso)
 
-    print('\nMatriz de recursos necessarios a cada processo (R):\n', matriz_recursos_necessarios)
-    print()
-
-    return matriz_recursos_necessarios
+        matriz.append(processos)
+    return matriz
 
 
-def Dados(recursos_totais, matriz_alocados, recursos_alocados, recursos_disponiveis, matriz_recursos_necessarios):
-    print('Recursos totais (E):\n', recursos_totais)
-    print()
-    print('Recursos alocados a cada processo (C):\n', matriz_alocados)
-    print()
-    print('Vetor de recursos alocados (P):\n', recursos_alocados)
-    print()
-    print('Vetor de recursos disponiveis (A):\n', recursos_disponiveis)
-    print()
-    print('Matriz de recursos necessarios (R):\n', matriz_recursos_necessarios)
-    print()
-    input('Pressione Enter para continuar.....')
+# Pede a inserção da matriz de requisições R
+def MatrizRequisiçoes(qtd_processos, qtd):
+    matriz_requisiçoes = list()
+    for i in range(qtd_processos):
+        processos = list()
+        for j in range(qtd):
+            recurso = int(input(f'Insira a quantidade do recurso {j+1} que é necessário para o processo {i+1}: '))
+            processos.append(recurso)
+
+        matriz_requisiçoes.append(processos)
+    return matriz_requisiçoes
+
+
+#verifica se a matriz de alocação está correta
+def verificaçaoMatriz(matriz, E, A):
+    soma = np.array([0, 0, 0])
+    for i in range(len(matriz)):
+        soma += matriz[i]
     
+    x = np.array(E)
+    y = np.array(A)
+    z = x - y
+    
+    for c in range(len(soma)):
+        if soma[c] == z[c]:
+            continue
+        else:
+            return False
+    return True
 
 
-def banqueiro(qtd_processos,qtd_tipos_recursos, recursos_disponiveis, matriz_recursos_necessarios, matriz_alocados):
+# Verificar se há ou não deadlock
+def banqueiro(qtd_processos, qtd, recursosDisponiveis, requisiçoes,matriz ):
 
-    # Vetor com 1's em cada processo, indicando se este ainda irá rodar (n = 1) ou não (n = 0)
+    run = np.ones(qtd_processos)
+    recursosDisponiveis = np.array(recursosDisponiveis)
+    requisiçoes = np.array(requisiçoes)
+    matriz = np.array(matriz)
 
-    rodando = np.ones(qtd_processos, dtype='int64')
 
-    # enquanto a quantidade de números diferentes de 0 for maior do que 0, a linha de código do while irá rodar
+    while np.count_nonzero(run) > 0:
+        alocou = False
+        for n in range(qtd_processos):
 
-    while np.count_nonzero(rodando) > 0:
-        alocou_recursos = False
-        for num_processo in range(qtd_processos):
+            if run[n] != 0:
+                if all(i >= 0 for i in recursosDisponiveis - (requisiçoes[n] - matriz[n])):
+                    alocou = True
+                    print(f'P{n+1} está rodando!')
+                    input('Pressione <Enter> para prosseguir \n')
+                    run[n] = 0
+                    recursosDisponiveis += matriz[n]
+                    matriz[n] = np.zeros(qtd)
+                    print(f'\nvetor de recursos disponíveis A >>> {recursosDisponiveis}')
+                    print('\nMatriz de requisições R: \n')
+                    for i in range(len(matriz)):
+                        print(f'P{i+1} -- {requisiçoes[i]}')
 
-            # se o processo de índice "num_processo" irá rodar ou não
-
-            if rodando[num_processo] != 0:
-                if all(i >= 0 for i in recursos_disponiveis - (matriz_recursos_necessarios[num_processo] - matriz_alocados[num_processo])):
-                    alocou_recursos = True
-                    print('Processo %d está rodando' % (num_processo + 1))
-                    input('Pressione Enter para prosseguir......\n')
-                    rodando[num_processo] = 0
-                    recursos_disponiveis += matriz_alocados[num_processo]
-                    matriz_alocados[num_processo] = np.zeros(qtd_tipos_recursos, dtype='int64')
-                    print("Recursos Disponíveis (A):\n", recursos_disponiveis)
-                    print()
-                    print("Recursos Necessários (R):\n", matriz_alocados)
-                    print()
-
-        if alocou_recursos == False:
-            print('Os processos entrarão em Deadlock')
+        if alocou == False:
+            print('Os processos entrarão em deadlock!')
             exit()
-
-    print('Os processos não entrarão em Deadlock.')
-
-
-def main():
-    qtd_processos = int(input('Digite quantos processos estão em execução:\n' \
-                               '>>> '))
-    qtd_tipos_recursos = int(input('Digite quantos tipos de recursos necessitará cada processo:\n' \
-                               '>>> '))
-    recursos_totais = RecursosTotais(qtd_tipos_recursos)
-    matriz_alocados = MatrizAlocados(qtd_processos, qtd_tipos_recursos)
-    recursos_alocados = RecursosAlocados(matriz_alocados)
-    recursos_disponiveis = RecursosDisponiveis(recursos_totais, recursos_alocados)
-    matriz_recursos_necessarios = RecursosNecessarios(qtd_processos, qtd_tipos_recursos)
-    input('Pressione Enter para continuar.....')
+        
+        print('Os processos não entrarão em deadlock')
+                    
     
-    Dados(recursos_totais, matriz_alocados, recursos_alocados, recursos_disponiveis, matriz_recursos_necessarios)
-    banqueiro(qtd_processos, qtd_tipos_recursos, recursos_disponiveis, matriz_recursos_necessarios, matriz_alocados)
 
+
+# Imprimir os resultados
+def main():
+    
+    #Instanciando as funções
+    recursosTotais = RecursosTotais(qtd)
+    recursosDisponiveis = RecursosDisponiveis(qtd)
+    matriz = MatrizAlocaçao(qtd_processos, qtd)
+    verificacao = verificaçaoMatriz(matriz, recursosTotais, recursosDisponiveis)
+    requisiçoes = MatrizRequisiçoes(qtd_processos, qtd)
+    
+
+    if verificacao == True:
+        print(f'\nvetor de recursos existentes E >>> {recursosTotais}')
+        print(f'\nvetor de recursos disponíveis A >>> {recursosDisponiveis}')
+
+        print('\nMatriz de alocação C:\n')
+        for c in range(len(matriz)):
+            print(f'P{c+1} -- {matriz[c]}')
+
+        print('\nMatriz de requisições R: \n')
+        for i in range(len(matriz)):
+            print(f'P{i+1} -- {requisiçoes[i]}')
+
+        banqueiro(qtd_processos, qtd, recursosDisponiveis, requisiçoes, matriz)
+
+    else:
+        print('Os valores inseridos para a matriz de alocação C estão incorretos!')
+    
 
 main()
